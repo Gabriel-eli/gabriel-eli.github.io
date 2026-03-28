@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <meta name="theme-color" content="#0a0f1a">
     <link rel="shortcut icon" href="barça.ICO.ico" type="image/x-icon">
-    <title>QUIZ TEC - Sistemas Embarcados</title>
+    <title>QUIZ TEC - Ranking Global</title>
     <style>
         * {
             margin: 0;
@@ -25,7 +25,6 @@
             position: relative;
         }
 
-        /* Fundo Aurora Boreal suave (otimizado) */
         .aurora-bg {
             position: fixed;
             top: 0;
@@ -70,7 +69,6 @@
             width: 100%;
         }
 
-        /* Páginas */
         .page {
             display: none;
             animation: fadeIn 0.3s ease;
@@ -85,7 +83,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Tela Inicial */
         .start-screen {
             padding: 1.8rem;
         }
@@ -188,7 +185,6 @@
             box-shadow: 0 4px 12px rgba(30, 111, 92, 0.5);
         }
 
-        /* Ranking */
         .ranking-container {
             background: rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(8px);
@@ -241,9 +237,9 @@
             margin-top: 1rem;
             width: 100%;
             font-size: 0.8rem;
+            display: none; /* escondido porque o ranking agora é global e não pode ser limpo por qualquer um */
         }
 
-        /* Quiz Screen */
         .quiz-screen {
             padding: 1.5rem;
         }
@@ -362,7 +358,6 @@
             transition: 0.2s;
         }
 
-        /* Result Screen */
         .result-screen {
             text-align: center;
             padding: 1.8rem;
@@ -390,6 +385,12 @@
             font-size: 0.9rem;
         }
 
+        .loading {
+            text-align: center;
+            padding: 1rem;
+            color: #9effe0;
+        }
+
         @media (max-width: 640px) {
             .start-screen, .quiz-screen, .result-screen { padding: 1rem; }
             .question-text { font-size: 1rem; }
@@ -410,7 +411,7 @@
             <div class="start-screen">
                 <div class="header-futuristic">
                     <h1>🤖 QUIZ TEC</h1>
-                    <div class="sub">Sistemas Embarcados · Computação</div>
+                    <div class="sub">Sistemas Embarcados · Computação · Ranking Global</div>
                 </div>
 
                 <div class="nav-buttons">
@@ -436,9 +437,11 @@
 
                 <div id="rankingSection" class="page-section" style="display: none;">
                     <div class="ranking-container">
-                        <h3 class="ranking-title">🏆 MELHORES TEMPOS 🏆</h3>
-                        <div id="rankingList" class="ranking-list"></div>
-                        <button id="clearRankingBtn" class="clear-ranking">🗑️ LIMPAR RANKING</button>
+                        <h3 class="ranking-title">🏆 MELHORES PONTUAÇÕES 🏆</h3>
+                        <div id="rankingList" class="ranking-list">
+                            <div class="loading">Carregando ranking global...</div>
+                        </div>
+                        <button id="clearRankingBtn" class="clear-ranking" style="display: none;">🗑️ LIMPAR RANKING</button>
                     </div>
                 </div>
             </div>
@@ -480,7 +483,10 @@
 </div>
 
 <script>
-    // ========== BANCO DE PERGUNTAS (mesmo conteúdo) ==========
+    // ========== URL DO SEU BACKEND (Google Apps Script) ==========
+    const API_URL = "https://script.google.com/macros/s/AKfycbzegASjKq9xwpA_fQNKTmUV2EtnMlQLnTVq3wnPYhPshu6k-gm7Y5AuhctMytMmAaP8/exec";
+
+    // ========== BANCO DE PERGUNTAS ==========
     const QUESTIONS = {
         easy: [
             { text: "Qual empresa criou o microcontrolador Arduino?", options: ["Intel", "Atmel (agora Microchip)", "Texas Instruments", "STMicroelectronics"], correct: 1, explanation: "O Arduino foi baseado em microcontroladores Atmel, como o ATmega328P. A Atmel foi adquirida pela Microchip em 2016." },
@@ -525,7 +531,73 @@
         ]
     };
 
-    // Estado do jogo
+    // ========== FUNÇÕES DE RANKING GLOBAL ==========
+    async function getRanking() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Erro ao buscar ranking:', error);
+            return [];
+        }
+    }
+
+    async function addScoreToRanking(nome, pontuacao, total, nivel, tempoSeg) {
+        const porcentagem = Math.round((pontuacao / total) * 100);
+        const nivelFormatado = nivel === 'easy' ? 'Nível 1' : nivel === 'medium' ? 'Nível 2' : 'Nível 3';
+        const body = {
+            nome: nome.trim() || "Anônimo",
+            pontuacao: pontuacao,
+            total: total,
+            porcentagem: porcentagem,
+            nivel: nivelFormatado,
+            tempo: tempoSeg
+        };
+        try {
+            // Usando fetch com mode 'no-cors' para evitar problemas de CORS com o Apps Script
+            // Mas isso não permite ler a resposta. Como não precisamos da resposta, ok.
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            console.log('Pontuação enviada com sucesso!');
+        } catch (error) {
+            console.error('Erro ao enviar pontuação:', error);
+        }
+    }
+
+    async function displayRanking() {
+        const rankingListDiv = document.getElementById('rankingList');
+        if (!rankingListDiv) return;
+        rankingListDiv.innerHTML = '<div class="loading">Carregando ranking global...</div>';
+        const ranking = await getRanking();
+        if (!ranking || ranking.length === 0) {
+            rankingListDiv.innerHTML = '<div style="text-align:center; padding:0.8rem;">Nenhum registro ainda. Complete um quiz!</div>';
+            return;
+        }
+        rankingListDiv.innerHTML = ranking.map((entry, idx) => {
+            const tempoFormatado = formatTime(entry.tempo || 0);
+            return `
+                <div class="ranking-item">
+                    <span class="ranking-name">${idx+1}. ${entry.nome}</span>
+                    <span class="ranking-score">${entry.pontuacao}/${entry.total} (${entry.porcentagem}%)</span>
+                    <span class="ranking-time">⏱️ ${tempoFormatado}</span>
+                    <span style="font-size:0.7rem;">${entry.nivel}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    // ========== ESTADO DO JOGO ==========
     let currentQuestions = [];
     let currentIndex = 0;
     let score = 0;
@@ -536,7 +608,7 @@
     let startTime = null;
     let totalTimeSpent = 0;
 
-    // Elementos DOM (com verificação de existência)
+    // Elementos DOM
     const startPage = document.getElementById('startPage');
     const quizPage = document.getElementById('quizPage');
     const resultPage = document.getElementById('resultPage');
@@ -546,84 +618,16 @@
     const startQuizBtn = document.getElementById('startQuizBtn');
     const playerNameInput = document.getElementById('playerName');
     const difficultySelect = document.getElementById('difficulty');
-    const clearRankingBtn = document.getElementById('clearRankingBtn');
     const nextBtn = document.getElementById('nextQuestionBtn');
     const playAgainBtn = document.getElementById('playAgainBtn');
     const backToMenuBtn = document.getElementById('backToMenuBtn');
 
-    // Ranking
-    function getRanking() {
-        try {
-            const data = localStorage.getItem('quizTecRanking');
-            return data ? JSON.parse(data) : [];
-        } catch(e) { return []; }
-    }
-
-    function saveRanking(ranking) {
-        localStorage.setItem('quizTecRanking', JSON.stringify(ranking));
-    }
-
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    }
-
-    function addScoreToRanking(name, score, total, level, totalSeconds) {
-        if (!name || name.trim() === "") name = "Anônimo";
-        const ranking = getRanking();
-        const percentage = Math.round((score / total) * 100);
-        ranking.push({
-            name: name.trim(),
-            score: score,
-            total: total,
-            percentage: percentage,
-            level: level === 'easy' ? 'Nível 1' : level === 'medium' ? 'Nível 2' : 'Nível 3',
-            date: new Date().toLocaleDateString(),
-            timeSeconds: totalSeconds
-        });
-        ranking.sort((a, b) => {
-            if (a.score !== b.score) return b.score - a.score;
-            if (a.timeSeconds !== b.timeSeconds) return a.timeSeconds - b.timeSeconds;
-            return 0;
-        });
-        const topRanking = ranking.slice(0, 15);
-        saveRanking(topRanking);
-        displayRanking();
-    }
-
-    function displayRanking() {
-        const ranking = getRanking();
-        const rankingListDiv = document.getElementById('rankingList');
-        if (!rankingListDiv) return;
-        if (ranking.length === 0) {
-            rankingListDiv.innerHTML = '<div style="text-align:center; padding:0.8rem;">Nenhum registro ainda.</div>';
-            return;
-        }
-        rankingListDiv.innerHTML = ranking.map((entry, idx) => `
-            <div class="ranking-item">
-                <span class="ranking-name">${idx+1}. ${entry.name}</span>
-                <span class="ranking-score">${entry.score}/${entry.total} (${entry.percentage}%)</span>
-                <span class="ranking-time">⏱️ ${formatTime(entry.timeSeconds)}</span>
-                <span style="font-size:0.7rem; color:#a0f0e0;">${entry.level}</span>
-            </div>
-        `).join('');
-    }
-
-    function clearRanking() {
-        if (confirm('Limpar todo o ranking? Essa ação não pode ser desfeita.')) {
-            localStorage.removeItem('quizTecRanking');
-            displayRanking();
-        }
-    }
-
-    // Quiz
+    // Funções do quiz (permanecem iguais, apenas a adição do ranking foi substituída)
     function loadQuestions(level) {
         let questions;
         if (level === 'easy') questions = [...QUESTIONS.easy];
         else if (level === 'medium') questions = [...QUESTIONS.medium];
         else questions = [...QUESTIONS.hard];
-        // Embaralhar
         for (let i = questions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [questions[i], questions[j]] = [questions[j], questions[i]];
@@ -632,10 +636,8 @@
     }
 
     function stopTimer() {
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
     }
 
     function startTimer() {
@@ -748,14 +750,15 @@
         else endQuiz();
     }
 
-    function endQuiz() {
+    async function endQuiz() {
         stopTimer();
         const total = currentQuestions.length;
         const percentage = Math.round((score/total)*100);
         if (startTime) totalTimeSpent = Math.floor((Date.now() - startTime)/1000);
         const playerName = playerNameInput?.value || "Anônimo";
         const level = difficultySelect?.value || "easy";
-        addScoreToRanking(playerName, score, total, level, totalTimeSpent);
+        // Envia a pontuação para o ranking global
+        await addScoreToRanking(playerName, score, total, level, totalTimeSpent);
 
         const finalScoreSpan = document.getElementById('finalScore');
         const resultMsg = document.getElementById('resultMessage');
@@ -838,11 +841,9 @@
         navBtns.forEach(b => b.classList.remove('active'));
         if (navBtns[0]) navBtns[0].classList.add('active');
     });
-    if (clearRankingBtn) clearRankingBtn.addEventListener('click', clearRanking);
 
     // Inicialização
     showSection('quiz-setup');
-    displayRanking();
     if (playerNameInput) playerNameInput.value = "";
 </script>
 </body>

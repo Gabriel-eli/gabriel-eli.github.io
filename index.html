@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#0a0f1a">
+    <link rel="shortcut icon" href="barça.ICO.ico" type="image/x-icon">
+    <title>QUIZ TEC - Sistemas Embarcados</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            background: #0a0f1a;
+            position: relative;
+        }
+
+        /* Fundo Aurora Boreal suave (otimizado) */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(125deg, #0b1a2e, #102b3a, #1a2f3f, #0f2c2c);
+            background-size: 400% 400%;
+            animation: auroraShift 20s ease infinite;
+        }
+
+        @keyframes auroraShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .aurora-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at 30% 40%, rgba(0, 255, 150, 0.05), rgba(0, 200, 180, 0.03), transparent 70%);
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(20, 28, 38, 0.75);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(80, 180, 200, 0.3);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(0, 255, 200, 0.1);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .app-container {
+            width: 100%;
+        }
+
+        /* Páginas */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tela Inicial */
+        .start-screen {
+            padding: 1.8rem;
+        }
+
+        .header-futuristic {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-futuristic h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e0f2fe, #9effe0, #7ac7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.3rem;
+        }
+
+        .sub {
+            font-size: 0.9rem;
+            color: #cbd5e6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .nav-btn {
+            background: rgba(30, 50, 70, 0.5);
+            border: 1px solid rgba(80, 180, 200, 0.5);
+            padding: 0.6rem 1.5rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(120deg, #1e6f5c, #289672);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 111, 92, 0.4);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(30, 111, 92, 0.5);
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.2rem 0;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .input-field input, .input-field select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(80, 180, 200, 0.5);
+            padding: 10px 16px;
+            border-radius: 60px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .input-field input:focus, .input-field select:focus {
+            border-color: #50e0c0;
+            box-shadow: 0 0 0 2px rgba(80, 224, 192, 0.2);
+        }
+
+        .btn-start {
+            background: linear-gradient(120deg, #1e6f5c, #289672);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(30, 111, 92, 0.5);
+        }
+
+        /* Ranking */
+        .ranking-container {
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-top: 1.2rem;
+            border: 1px solid rgba(80, 180, 200, 0.3);
+        }
+
+        .ranking-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #9effe0;
+        }
+
+        .ranking-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem;
+            border-bottom: 1px solid rgba(80, 180, 200, 0.2);
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            color: #eef2ff;
+        }
+
+        .ranking-item:nth-child(1) { background: rgba(255,215,0,0.25); border-left: 3px solid gold; }
+        .ranking-item:nth-child(2) { background: rgba(192,192,192,0.25); border-left: 3px solid silver; }
+        .ranking-item:nth-child(3) { background: rgba(205,127,50,0.25); border-left: 3px solid #cd7f32; }
+
+        .ranking-name { font-weight: 600; flex: 2; }
+        .ranking-score { flex: 1; text-align: center; }
+        .ranking-time { flex: 1; text-align: right; font-family: monospace; font-size: 0.75rem; color: #a0f0e0; }
+
+        .clear-ranking {
+            background: rgba(220, 80, 80, 0.7);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 60px;
+            color: white;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            font-size: 0.8rem;
+        }
+
+        /* Quiz Screen */
+        .quiz-screen {
+            padding: 1.5rem;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(80, 180, 200, 0.4);
+        }
+
+        .quiz-stats {
+            display: flex;
+            gap: 1rem;
+            font-weight: 500;
+            color: #d9f0ff;
+            font-size: 0.9rem;
+        }
+
+        .timer-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #9effe0;
+        }
+
+        .timer-box.warning {
+            color: #ffb347;
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .question-box {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid rgba(80, 200, 180, 0.3);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .option-btn {
+            background: rgba(15, 25, 35, 0.7);
+            border: 1px solid rgba(80, 180, 200, 0.5);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            color: #eef2ff;
+            font-weight: 500;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateX(4px);
+            background: rgba(30, 111, 92, 0.6);
+            border-color: #50e0c0;
+        }
+
+        .option-btn.correct {
+            background: rgba(0, 180, 100, 0.5);
+            border-color: #2effb0;
+        }
+
+        .option-btn.wrong {
+            background: rgba(220, 80, 80, 0.5);
+            border-color: #ff8888;
+        }
+
+        .explanation-box {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #50e0c0;
+            font-size: 0.85rem;
+            color: #e2f0ff;
+        }
+
+        .next-btn {
+            background: linear-gradient(120deg, #1e6f5c, #289672);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            color: white;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        /* Result Screen */
+        .result-screen {
+            text-align: center;
+            padding: 1.8rem;
+        }
+
+        .final-score {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9effe0, #50e0c0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0.8rem 0;
+        }
+
+        .back-btn {
+            background: rgba(30, 50, 70, 0.7);
+            border: 1px solid rgba(80, 180, 200, 0.5);
+            padding: 8px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            margin: 0.4rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            .start-screen, .quiz-screen, .result-screen { padding: 1rem; }
+            .question-text { font-size: 1rem; }
+            .option-btn { font-size: 0.85rem; padding: 0.7rem; }
+            .ranking-item { flex-wrap: wrap; gap: 0.3rem; }
+            .ranking-name { flex-basis: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="aurora-bg"></div>
+<div class="aurora-overlay"></div>
+
+<div class="glass-panel">
+    <div class="app-container">
+        <!-- PÁGINA INICIAL -->
+        <div id="startPage" class="page active">
+            <div class="start-screen">
+                <div class="header-futuristic">
+                    <h1>🤖 QUIZ TEC</h1>
+                    <div class="sub">Sistemas Embarcados · Computação</div>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="nav-btn active" data-page="quiz-setup">🎮 JOGAR</button>
+                    <button class="nav-btn" data-page="ranking">🏆 RANKING</button>
+                </div>
+
+                <div id="quizSetup" class="page-section">
+                    <div class="input-group">
+                        <div class="input-field">
+                            <input type="text" id="playerName" placeholder="Seu nome" maxlength="25" autocomplete="off">
+                        </div>
+                        <div class="input-field">
+                            <select id="difficulty">
+                                <option value="easy">🌱 NÍVEL 1</option>
+                                <option value="medium">⚡ NÍVEL 2</option>
+                                <option value="hard">🔥 NÍVEL 3</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="startQuizBtn" class="btn-start">🚀 COMEÇAR QUIZ</button>
+                </div>
+
+                <div id="rankingSection" class="page-section" style="display: none;">
+                    <div class="ranking-container">
+                        <h3 class="ranking-title">🏆 MELHORES TEMPOS 🏆</h3>
+                        <div id="rankingList" class="ranking-list"></div>
+                        <button id="clearRankingBtn" class="clear-ranking">🗑️ LIMPAR RANKING</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA DO QUIZ -->
+        <div id="quizPage" class="page">
+            <div class="quiz-screen">
+                <div class="quiz-header">
+                    <div class="quiz-stats">
+                        <span id="questionNumber">Pergunta 1/10</span>
+                        <span id="scoreDisplay">✅ 0 pts</span>
+                    </div>
+                    <div class="timer-box" id="timerDisplay">⏱️ 40s</div>
+                </div>
+                <div class="question-box">
+                    <div class="question-text" id="questionText">Carregando...</div>
+                    <div class="options-grid" id="optionsContainer"></div>
+                    <div id="explanationBox" class="explanation-box" style="display: none;"></div>
+                </div>
+                <button id="nextQuestionBtn" class="next-btn" style="display: none;">PRÓXIMA PERGUNTA →</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA DE RESULTADO -->
+        <div id="resultPage" class="page">
+            <div class="result-screen">
+                <h2>📊 RESULTADO</h2>
+                <div class="final-score" id="finalScore">0/0</div>
+                <p id="resultMessage"></p>
+                <p id="totalTimeMessage" style="margin: 0.8rem 0; background: rgba(0,0,0,0.5); display: inline-block; padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.9rem;"></p>
+                <div>
+                    <button id="playAgainBtn" class="back-btn">🔄 JOGAR NOVAMENTE</button>
+                    <button id="backToMenuBtn" class="back-btn">🏠 MENU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== BANCO DE PERGUNTAS (mesmo conteúdo) ==========
+    const QUESTIONS = {
+        easy: [
+            { text: "Qual empresa criou o microcontrolador Arduino?", options: ["Intel", "Atmel (agora Microchip)", "Texas Instruments", "STMicroelectronics"], correct: 1, explanation: "O Arduino foi baseado em microcontroladores Atmel, como o ATmega328P. A Atmel foi adquirida pela Microchip em 2016." },
+            { text: "O que significa a sigla CPU?", options: ["Central Processing Unit", "Computer Personal Unit", "Central Program Utility", "Core Processing Unit"], correct: 0, explanation: "CPU = Central Processing Unit, é o cérebro do computador." },
+            { text: "Qual desses é um microcontrolador da família ESP32?", options: ["ATmega328P", "RP2040", "ESP32-WROOM-32", "STM32F103"], correct: 2, explanation: "ESP32-WROOM-32 é um módulo baseado no chip ESP32." },
+            { text: "O que é um sistema embarcado?", options: ["Um computador de mesa", "Um sistema dedicado a uma função específica", "Um tipo de servidor", "Um sistema operacional"], correct: 1, explanation: "Sistema embarcado é um sistema computacional dedicado a uma função específica." },
+            { text: "Qual linguagem é mais comum para programar Arduino?", options: ["Python", "Java", "C/C++", "Assembly"], correct: 2, explanation: "Arduino utiliza uma versão simplificada de C/C++." },
+            { text: "O que é um pino GPIO?", options: ["Pino de alimentação", "Pino de propósito geral", "Pino de áudio", "Pino de vídeo"], correct: 1, explanation: "GPIO = General Purpose Input/Output." },
+            { text: "Vantagem do ESP32 sobre ESP8266?", options: ["Menor consumo", "Bluetooth integrado", "Mais memória", "Wi-Fi mais rápido"], correct: 1, explanation: "ESP32 possui Bluetooth/BLE integrado." },
+            { text: "O que é um bootloader?", options: ["Antivírus", "Programa que inicia o sistema", "Driver de vídeo", "Tipo de memória"], correct: 1, explanation: "Bootloader carrega o sistema na inicialização." },
+            { text: "Barramento de comunicação serial?", options: ["USB", "HDMI", "I2C", "VGA"], correct: 2, explanation: "I2C é um barramento serial síncrono." },
+            { text: "O que faz um conversor ADC?", options: ["Digital para Analógico", "Analógico para Digital", "Aumenta voltagem", "Diminui corrente"], correct: 1, explanation: "ADC converte sinais analógicos em digitais." }
+        ],
+        medium: [
+            { text: "Microcontrolador do Raspberry Pi Pico?", options: ["ATmega328P", "ESP32", "RP2040", "STM32F4"], correct: 2, explanation: "Raspberry Pi Pico usa o chip RP2040." },
+            { text: "O que significa PWM?", options: ["Pulse Width Modulation", "Power Wave Management", "Pulse Wave Mode", "Programmable Wave Module"], correct: 0, explanation: "PWM = Modulação por Largura de Pulso." },
+            { text: "Protocolo com apenas 2 fios?", options: ["SPI", "UART", "I2C", "CAN"], correct: 2, explanation: "I2C usa SDA e SCL." },
+            { text: "O que é um registrador?", options: ["Memória volátil", "Memória permanente", "Armazenamento rápido na CPU", "Sensor"], correct: 2, explanation: "Registradores são memórias de alta velocidade na CPU." },
+            { text: "Função do watchdog timer?", options: ["Medir temperatura", "Reiniciar o sistema se travar", "Contar pulsos", "Gerar interrupções"], correct: 1, explanation: "Watchdog reinicia o sistema se o software não responder." },
+            { text: "O que é FreeRTOS?", options: ["Compilador", "Sistema operacional de tempo real", "Placa de desenvolvimento", "Protocolo"], correct: 1, explanation: "FreeRTOS é um RTOS amplamente usado." },
+            { text: "Diferença microprocessador vs microcontrolador?", options: ["Nenhuma", "Microcontrolador tem memória e periféricos integrados", "Microprocessador é mais lento", "Microcontrolador é mais potente"], correct: 1, explanation: "Microcontrolador integra CPU, memória e periféricos." },
+            { text: "Sigla IDE?", options: ["Integrated Development Environment", "Internal Drive Engine", "Interface Design Editor", "Input Data Encoder"], correct: 0, explanation: "IDE = Ambiente de Desenvolvimento Integrado." },
+            { text: "Frequência do clock do Arduino UNO?", options: ["8 MHz", "16 MHz", "32 MHz", "48 MHz"], correct: 1, explanation: "Arduino UNO usa cristal de 16 MHz." },
+            { text: "O que é uma interrupção?", options: ["Erro de programação", "Sinal que pausa a execução", "Tipo de loop", "Função de delay"], correct: 1, explanation: "Interrupção pausa a execução para atender um evento." }
+        ],
+        hard: [
+            { text: "Arquitetura do STM32F4?", options: ["ARM Cortex-M0", "ARM Cortex-M3", "ARM Cortex-M4", "ARM Cortex-A8"], correct: 2, explanation: "STM32F4 usa Cortex-M4 com FPU." },
+            { text: "O que significa JTAG?", options: ["Joint Test Action Group", "Java Test Application Guide", "Just Time Access Gateway", "Joint Timing And Gate"], correct: 0, explanation: "JTAG é padrão para teste e depuração." },
+            { text: "Diferença entre SRAM e DRAM?", options: ["SRAM é mais lenta", "SRAM não precisa de refresh", "DRAM é mais cara", "Não há diferença"], correct: 1, explanation: "SRAM é estática, DRAM precisa de refresh." },
+            { text: "Bootloader no Arduino?", options: ["Carregador via USB/serial", "Sistema operacional", "Driver USB", "Biblioteca"], correct: 0, explanation: "Bootloader permite gravação via USB." },
+            { text: "Protocolo CAN bus é usado em?", options: ["Automotivo", "Áudio digital", "Redes de sensores", "Streaming"], correct: 0, explanation: "CAN bus é amplamente usado em automóveis." },
+            { text: "O que é DMA?", options: ["Tipo de memória", "Controlador que transfere dados sem CPU", "Protocolo", "Registrador"], correct: 1, explanation: "DMA permite transferência direta entre periféricos e memória." },
+            { text: "Voltagem dos GPIO do ESP32?", options: ["5V", "3.3V", "2.5V", "1.8V"], correct: 1, explanation: "ESP32 opera com lógica de 3.3V." },
+            { text: "O que significa RISC?", options: ["Reduced Instruction Set Computer", "Random Instruction Set Code", "Real Instruction System Control", "Reduced Input System Code"], correct: 0, explanation: "RISC = Computador com Conjunto Reduzido de Instruções." },
+            { text: "Característica do SPI?", options: ["Assíncrono", "Full-duplex com mestre-escravo", "Um dispositivo por barramento", "Sem clock"], correct: 1, explanation: "SPI é síncrono full-duplex." },
+            { text: "Cache de processador serve para?", options: ["Memória lenta", "Memória rápida entre CPU e RAM", "ROM", "Disco rígido"], correct: 1, explanation: "Cache acelera o acesso aos dados frequentes." },
+            { text: "Empresa que desenvolveu o RP2040?", options: ["Espressif", "STMicroelectronics", "Raspberry Pi Foundation", "Microchip"], correct: 2, explanation: "RP2040 foi criado pela Raspberry Pi Foundation." },
+            { text: "Sigla RTOS?", options: ["Real Time Operating System", "Rapid Transfer Operating System", "Real Time Output System", "Random Time Operating System"], correct: 0, explanation: "RTOS = Sistema Operacional de Tempo Real." },
+            { text: "Vantagem das interrupções?", options: ["Melhor organização", "Resposta rápida", "Economia de energia", "Todas"], correct: 3, explanation: "Interrupções trazem todos esses benefícios." },
+            { text: "Brownout detector detecta?", options: ["Temperatura", "Queda de tensão", "Corrente", "Umidade"], correct: 1, explanation: "Brownout detector monitora a tensão de alimentação." },
+            { text: "Protocolo do sensor DS18B20?", options: ["I2C", "SPI", "1-Wire", "UART"], correct: 2, explanation: "DS18B20 usa 1-Wire." }
+        ]
+    };
+
+    // Estado do jogo
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let timeLeft = 40;
+    let timerInterval = null;
+    let canAnswer = true;
+    let waitingNext = false;
+    let startTime = null;
+    let totalTimeSpent = 0;
+
+    // Elementos DOM (com verificação de existência)
+    const startPage = document.getElementById('startPage');
+    const quizPage = document.getElementById('quizPage');
+    const resultPage = document.getElementById('resultPage');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const quizSetupDiv = document.getElementById('quizSetup');
+    const rankingSectionDiv = document.getElementById('rankingSection');
+    const startQuizBtn = document.getElementById('startQuizBtn');
+    const playerNameInput = document.getElementById('playerName');
+    const difficultySelect = document.getElementById('difficulty');
+    const clearRankingBtn = document.getElementById('clearRankingBtn');
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+
+    // Ranking
+    function getRanking() {
+        try {
+            const data = localStorage.getItem('quizTecRanking');
+            return data ? JSON.parse(data) : [];
+        } catch(e) { return []; }
+    }
+
+    function saveRanking(ranking) {
+        localStorage.setItem('quizTecRanking', JSON.stringify(ranking));
+    }
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+
+    function addScoreToRanking(name, score, total, level, totalSeconds) {
+        if (!name || name.trim() === "") name = "Anônimo";
+        const ranking = getRanking();
+        const percentage = Math.round((score / total) * 100);
+        ranking.push({
+            name: name.trim(),
+            score: score,
+            total: total,
+            percentage: percentage,
+            level: level === 'easy' ? 'Nível 1' : level === 'medium' ? 'Nível 2' : 'Nível 3',
+            date: new Date().toLocaleDateString(),
+            timeSeconds: totalSeconds
+        });
+        ranking.sort((a, b) => {
+            if (a.score !== b.score) return b.score - a.score;
+            if (a.timeSeconds !== b.timeSeconds) return a.timeSeconds - b.timeSeconds;
+            return 0;
+        });
+        const topRanking = ranking.slice(0, 15);
+        saveRanking(topRanking);
+        displayRanking();
+    }
+
+    function displayRanking() {
+        const ranking = getRanking();
+        const rankingListDiv = document.getElementById('rankingList');
+        if (!rankingListDiv) return;
+        if (ranking.length === 0) {
+            rankingListDiv.innerHTML = '<div style="text-align:center; padding:0.8rem;">Nenhum registro ainda.</div>';
+            return;
+        }
+        rankingListDiv.innerHTML = ranking.map((entry, idx) => `
+            <div class="ranking-item">
+                <span class="ranking-name">${idx+1}. ${entry.name}</span>
+                <span class="ranking-score">${entry.score}/${entry.total} (${entry.percentage}%)</span>
+                <span class="ranking-time">⏱️ ${formatTime(entry.timeSeconds)}</span>
+                <span style="font-size:0.7rem; color:#a0f0e0;">${entry.level}</span>
+            </div>
+        `).join('');
+    }
+
+    function clearRanking() {
+        if (confirm('Limpar todo o ranking? Essa ação não pode ser desfeita.')) {
+            localStorage.removeItem('quizTecRanking');
+            displayRanking();
+        }
+    }
+
+    // Quiz
+    function loadQuestions(level) {
+        let questions;
+        if (level === 'easy') questions = [...QUESTIONS.easy];
+        else if (level === 'medium') questions = [...QUESTIONS.medium];
+        else questions = [...QUESTIONS.hard];
+        // Embaralhar
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+        return questions;
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimer() {
+        stopTimer();
+        timerInterval = setInterval(() => {
+            if (!canAnswer || waitingNext) return;
+            if (timeLeft <= 1) {
+                stopTimer();
+                if (canAnswer) handleTimeout();
+            } else {
+                timeLeft--;
+                const timerDisplay = document.getElementById('timerDisplay');
+                if (timerDisplay) timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+                if (timeLeft <= 10) timerDisplay?.classList.add('warning');
+                else timerDisplay?.classList.remove('warning');
+            }
+        }, 1000);
+    }
+
+    function handleTimeout() {
+        if (!canAnswer) return;
+        canAnswer = false;
+        const currentQ = currentQuestions[currentIndex];
+        const explanationBox = document.getElementById('explanationBox');
+        if (explanationBox) {
+            explanationBox.style.display = 'block';
+            explanationBox.innerHTML = `⏰ TEMPO ESGOTADO!<br><strong>Resposta correta:</strong> ${currentQ.options[currentQ.correct]}<br><br>${currentQ.explanation}`;
+        }
+        const optionBtns = document.querySelectorAll('.option-btn');
+        optionBtns.forEach(btn => {
+            btn.disabled = true;
+            const btnIndex = parseInt(btn.dataset.index);
+            if (btnIndex === currentQ.correct) btn.classList.add('correct');
+        });
+        const nextBtnElem = document.getElementById('nextQuestionBtn');
+        if (nextBtnElem) nextBtnElem.style.display = 'block';
+        waitingNext = true;
+    }
+
+    function handleAnswer(selectedIndex) {
+        if (!canAnswer || waitingNext) return;
+        canAnswer = false;
+        stopTimer();
+        const currentQ = currentQuestions[currentIndex];
+        const isCorrect = (selectedIndex === currentQ.correct);
+        if (isCorrect) {
+            score++;
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            if (scoreDisplay) scoreDisplay.textContent = `✅ ${score} pts`;
+        }
+        const explanationBox = document.getElementById('explanationBox');
+        if (explanationBox) {
+            explanationBox.style.display = 'block';
+            if (isCorrect) {
+                explanationBox.innerHTML = `✅ CORRETO!<br><br>${currentQ.explanation}`;
+            } else {
+                explanationBox.innerHTML = `❌ ERRADO!<br><strong>Resposta correta:</strong> ${currentQ.options[currentQ.correct]}<br><br>${currentQ.explanation}`;
+            }
+        }
+        const optionBtns = document.querySelectorAll('.option-btn');
+        optionBtns.forEach(btn => {
+            btn.disabled = true;
+            const btnIndex = parseInt(btn.dataset.index);
+            if (btnIndex === currentQ.correct) btn.classList.add('correct');
+            if (btnIndex === selectedIndex && !isCorrect) btn.classList.add('wrong');
+        });
+        const nextBtnElem = document.getElementById('nextQuestionBtn');
+        if (nextBtnElem) nextBtnElem.style.display = 'block';
+        waitingNext = true;
+    }
+
+    function renderQuestion() {
+        if (currentIndex >= currentQuestions.length) {
+            endQuiz();
+            return;
+        }
+        const q = currentQuestions[currentIndex];
+        const questionText = document.getElementById('questionText');
+        const questionNumberSpan = document.getElementById('questionNumber');
+        if (questionText) questionText.textContent = q.text;
+        if (questionNumberSpan) questionNumberSpan.textContent = `Pergunta ${currentIndex+1}/${currentQuestions.length}`;
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        if (optionsContainer) {
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${String.fromCharCode(65+idx)}. ${opt}`;
+                btn.dataset.index = idx;
+                btn.onclick = () => handleAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+        }
+        const explanationBox = document.getElementById('explanationBox');
+        if (explanationBox) explanationBox.style.display = 'none';
+        const nextBtnElem = document.getElementById('nextQuestionBtn');
+        if (nextBtnElem) nextBtnElem.style.display = 'none';
+        canAnswer = true;
+        waitingNext = false;
+        timeLeft = 40;
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (timerDisplay) timerDisplay.textContent = `⏱️ 40s`;
+        startTimer();
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) renderQuestion();
+        else endQuiz();
+    }
+
+    function endQuiz() {
+        stopTimer();
+        const total = currentQuestions.length;
+        const percentage = Math.round((score/total)*100);
+        if (startTime) totalTimeSpent = Math.floor((Date.now() - startTime)/1000);
+        const playerName = playerNameInput?.value || "Anônimo";
+        const level = difficultySelect?.value || "easy";
+        addScoreToRanking(playerName, score, total, level, totalTimeSpent);
+
+        const finalScoreSpan = document.getElementById('finalScore');
+        const resultMsg = document.getElementById('resultMessage');
+        const totalTimeMsg = document.getElementById('totalTimeMessage');
+        if (finalScoreSpan) finalScoreSpan.textContent = `${score}/${total} (${percentage}%)`;
+        let message = "";
+        if (percentage === 100) message = "🎉 PERFEITO! Conhecimento impecável! 🎉";
+        else if (percentage >= 80) message = "🌟 Excelente! Você domina o assunto! 🌟";
+        else if (percentage >= 60) message = "👍 Bom trabalho! Continue estudando! 👍";
+        else message = "📚 Bons estudos! Revise os conceitos e tente novamente! 📚";
+        if (resultMsg) resultMsg.textContent = message;
+        if (totalTimeMsg) totalTimeMsg.innerHTML = `⏱️ Tempo total: ${formatTime(totalTimeSpent)}`;
+
+        showPage('resultPage');
+    }
+
+    function startQuiz() {
+        let name = playerNameInput?.value || "";
+        if (!name.trim()) name = "Explorador";
+        const level = difficultySelect?.value || "easy";
+        let numQuestions = level === 'hard' ? 15 : 10;
+        currentQuestions = loadQuestions(level);
+        currentQuestions = currentQuestions.slice(0, numQuestions);
+        currentIndex = 0;
+        score = 0;
+        totalTimeSpent = 0;
+        startTime = Date.now();
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        if (scoreDisplay) scoreDisplay.textContent = `✅ 0 pts`;
+        showPage('quizPage');
+        renderQuestion();
+    }
+
+    // Navegação entre páginas
+    function showPage(pageId) {
+        const pages = ['startPage', 'quizPage', 'resultPage'];
+        pages.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active');
+        });
+        const activePage = document.getElementById(pageId);
+        if (activePage) activePage.classList.add('active');
+    }
+
+    function showSection(section) {
+        if (quizSetupDiv && rankingSectionDiv) {
+            if (section === 'quiz-setup') {
+                quizSetupDiv.style.display = 'block';
+                rankingSectionDiv.style.display = 'none';
+            } else {
+                quizSetupDiv.style.display = 'none';
+                rankingSectionDiv.style.display = 'block';
+                displayRanking();
+            }
+        }
+    }
+
+    // Eventos
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            navBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const section = btn.getAttribute('data-page');
+            if (section) showSection(section);
+        });
+    });
+
+    if (startQuizBtn) startQuizBtn.addEventListener('click', startQuiz);
+    if (nextBtn) nextBtn.addEventListener('click', nextQuestion);
+    if (playAgainBtn) playAgainBtn.addEventListener('click', () => {
+        showPage('startPage');
+        showSection('quiz-setup');
+        navBtns.forEach(b => b.classList.remove('active'));
+        if (navBtns[0]) navBtns[0].classList.add('active');
+    });
+    if (backToMenuBtn) backToMenuBtn.addEventListener('click', () => {
+        showPage('startPage');
+        showSection('quiz-setup');
+        navBtns.forEach(b => b.classList.remove('active'));
+        if (navBtns[0]) navBtns[0].classList.add('active');
+    });
+    if (clearRankingBtn) clearRankingBtn.addEventListener('click', clearRanking);
+
+    // Inicialização
+    showSection('quiz-setup');
+    displayRanking();
+    if (playerNameInput) playerNameInput.value = "";
+</script>
+</body>
+</html>

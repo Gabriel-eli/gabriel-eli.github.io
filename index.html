@@ -237,7 +237,7 @@
             margin-top: 1rem;
             width: 100%;
             font-size: 0.8rem;
-            display: none; /* escondido porque o ranking agora é global e não pode ser limpo por qualquer um */
+            display: none; /* escondido – ranking global não deve ser apagado por qualquer usuário */
         }
 
         .quiz-screen {
@@ -484,7 +484,7 @@
 
 <script>
     // ========== URL DO SEU BACKEND (Google Apps Script) ==========
-    const API_URL = "https://script.google.com/macros/s/AKfycbzegASjKq9xwpA_fQNKTmUV2EtnMlQLnTVq3wnPYhPshu6k-gm7Y5AuhctMytMmAaP8/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzlbBiQEnv70U_oyH0m_0xG3J6d6izhfhOOuIEIYNLOxVma6dEomBlf6_MjoBbw2gsh/exec";
 
     // ========== BANCO DE PERGUNTAS ==========
     const QUESTIONS = {
@@ -534,7 +534,9 @@
     // ========== FUNÇÕES DE RANKING GLOBAL ==========
     async function getRanking() {
         try {
-            const response = await fetch(API_URL);
+            // Adiciona timestamp para evitar cache
+            const url = `${API_URL}?t=${Date.now()}`;
+            const response = await fetch(url, { cache: 'no-store' });
             const data = await response.json();
             return data;
         } catch (error) {
@@ -555,11 +557,11 @@
             tempo: tempoSeg
         };
         try {
-            // Usando fetch com mode 'no-cors' para evitar problemas de CORS com o Apps Script
-            // Mas isso não permite ler a resposta. Como não precisamos da resposta, ok.
+            // Envia com no-cors e keepalive para garantir envio
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
+                keepalive: true,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
@@ -622,7 +624,7 @@
     const playAgainBtn = document.getElementById('playAgainBtn');
     const backToMenuBtn = document.getElementById('backToMenuBtn');
 
-    // Funções do quiz (permanecem iguais, apenas a adição do ranking foi substituída)
+    // Funções do quiz
     function loadQuestions(level) {
         let questions;
         if (level === 'easy') questions = [...QUESTIONS.easy];
@@ -757,7 +759,7 @@
         if (startTime) totalTimeSpent = Math.floor((Date.now() - startTime)/1000);
         const playerName = playerNameInput?.value || "Anônimo";
         const level = difficultySelect?.value || "easy";
-        // Envia a pontuação para o ranking global
+        // Envia a pontuação para o ranking global (assíncrono, sem bloquear a tela)
         await addScoreToRanking(playerName, score, total, level, totalTimeSpent);
 
         const finalScoreSpan = document.getElementById('finalScore');

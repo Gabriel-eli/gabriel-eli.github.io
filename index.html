@@ -557,10 +557,10 @@
             tempo: tempoSeg
         };
         try {
-            // Envia com no-cors e keepalive para garantir envio
+            // Envia com cors e keepalive para garantir envio
             await fetch(API_URL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'cors',
                 keepalive: true,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)

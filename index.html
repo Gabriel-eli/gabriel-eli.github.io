@@ -484,7 +484,7 @@
 
 <script>
     // ========== URL DO SEU BACKEND (Google Apps Script) ==========
-    const API_URL = "https://script.google.com/macros/s/AKfycbzlbBiQEnv70U_oyH0m_0xG3J6d6izhfhOOuIEIYNLOxVma6dEomBlf6_MjoBbw2gsh/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyhYa23j8RGdnlb75-dojc5CW3hAu9wVenc8fdNs7rqbOKmahVBrXq-cQg-Y11nk3ho/exec";
 
     // ========== BANCO DE PERGUNTAS ==========
     const QUESTIONS = {
@@ -533,43 +533,45 @@
 
     // ========== FUNÇÕES DE RANKING GLOBAL ==========
     async function getRanking() {
-        try {
-            // Adiciona timestamp para evitar cache
-            const url = `${API_URL}?t=${Date.now()}`;
-            const response = await fetch(url, { cache: 'no-store' });
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Erro ao buscar ranking:', error);
-            return [];
-        }
+    try {
+        const url = `${API_URL}?t=${Date.now()}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            redirect: 'follow'
+        });
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Erro ao buscar ranking:', error);
+        return [];
     }
+}
 
-    async function addScoreToRanking(nome, pontuacao, total, nivel, tempoSeg) {
-        const porcentagem = Math.round((pontuacao / total) * 100);
-        const nivelFormatado = nivel === 'easy' ? 'Nível 1' : nivel === 'medium' ? 'Nível 2' : 'Nível 3';
-        const body = {
-            nome: nome.trim() || "Anônimo",
-            pontuacao: pontuacao,
-            total: total,
-            porcentagem: porcentagem,
-            nivel: nivelFormatado,
-            tempo: tempoSeg
-        };
-        try {
-            // Envia com cors e keepalive para garantir envio
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'cors',
-                keepalive: true,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            console.log('Pontuação enviada com sucesso!');
-        } catch (error) {
-            console.error('Erro ao enviar pontuação:', error);
-        }
+async function addScoreToRanking(nome, pontuacao, total, nivel, tempoSeg) {
+    const porcentagem = Math.round((pontuacao / total) * 100);
+    const nivelFormatado = nivel === 'easy' ? 'Nível 1' : nivel === 'medium' ? 'Nível 2' : 'Nível 3';
+    const body = {
+        nome: nome.trim() || "Anônimo",
+        pontuacao: pontuacao,
+        total: total,
+        porcentagem: porcentagem,
+        nivel: nivelFormatado,
+        tempo: tempoSeg
+    };
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'  // ← mudança crítica
+            },
+            body: JSON.stringify(body),
+            redirect: 'follow'
+        });
+        console.log('Pontuação enviada com sucesso!');
+    } catch (error) {
+        console.error('Erro ao enviar pontuação:', error);
     }
+}
 
     async function displayRanking() {
         const rankingListDiv = document.getElementById('rankingList');
